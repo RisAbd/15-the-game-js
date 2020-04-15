@@ -14,8 +14,10 @@ body, html {
 }
 
 #game-container {
-  width: 400px;
-  height: 400px;
+  max-width: 350px;
+  max-height: 350px;
+  height: 70vh;
+  width: 70vh;
   background-color: #e1f4e1;
   display: grid;
   grid-auto-rows: 1fr;
@@ -26,7 +28,7 @@ body, html {
 }
 
 .cell {
-  font-size: 3rem;
+  font-size: 2.4rem;
   font-weight: 600;
   border-radius: 10px;
   border: 2px solid;
