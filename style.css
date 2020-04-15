@@ -10,7 +10,8 @@ body, html {
   display: flex;
   justify-content: center;
   align-items: center;
-  background-color: yellow;
+  background-color: lightyellow;
+  /*filter: invert(100%);*/
 }
 
 #game-container {
