@@ -116,7 +116,7 @@ class Game extends Array {
 const game = new Game(4, 4).shuffle();
 
 const gameContainer = document.querySelector('#game-container');
-const colors = ['red', 'blue', 'green', 'purple'];
+const colors = ['darkred', 'darkblue', 'darkgreen', 'darkpurple'];
 
 const cells = new Array(4*4).fill(0).map((_, i) => {
   const value = game[i];
