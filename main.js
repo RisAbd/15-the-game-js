@@ -111,12 +111,36 @@ class Game extends Array {
       return [pos, newPos];
     }
   }
+
+  /**
+    * return number between 0.0 and 1.0 
+    * where 0 means field is way far from completeness 
+    * and 1.0 means field is totally completed (ordered)
+    *
+  **/
+  estimatedCompleteness() {
+    // const manhattanDistance = ([x1, y1], [x2, y2]) => Math.abs(x2-x1) + Math.abs(y2-y1);
+    // const maxStepsCountForPosition = i => 'fuck you';  // todo: for 4x4 field return one of {10, 13, 16}
+    // const estimatedStepsCountForValue = (value, currentPos) => 'magic'; 
+    
+    // const maxStepsCountTotal = this.map((_, pos) => maxStepsCountForPosition).reduce((s, v) => s+v, 0);
+    // const stepsLeft = this.map((value, pos) => estimatedStepsCountForValue(value, pos)).reduce((s, v) => s+v, 0);
+    // return 1.0 - stepsLeft / maxStepsCountTotal;
+
+    const indexValueDiffSum = this
+        // zero is empty cell, it must be on last position
+        .map((value, index) => index-(value === 0 ? (this.length-1) : value-1))
+        .reduce((sum, diff) => sum+Math.abs(diff), 0);
+
+    // powering resulting value return more 'native' feeling values
+    return Math.pow(1.0 - indexValueDiffSum / (14*this.length), 3);
+  }
 }
 
 const game = new Game(4, 4).shuffle();
 
 const gameContainer = document.querySelector('#game-container');
-const colors = ['darkred', 'darkblue', 'darkgreen', 'darkpurple'];
+const rootContainer = document.querySelector('#app');
 
 const cells = new Array(4*4).fill(0).map((_, i) => {
   const value = game[i];
@@ -127,17 +151,29 @@ const cells = new Array(4*4).fill(0).map((_, i) => {
   if (value === 0) { cell.tabIndex = -1; }
   cell.addEventListener('click', onCellClick);
 
-  cell.style.color = colors[i%colors.length];
-
   gameContainer.appendChild(cell);  
 
   return cell;
 });
 
+function reflectGameStage() {
+  const completeness = game.estimatedCompleteness();
+  if (completeness === 1) {
+    rootContainer.style.backgroundColor = '#00c000';
+  } else {
+    // red component goes down to zero
+    // green to 1 according to completeness value
+    // ... means from gradient from red to green! kek
+    rootContainer.style.backgroundColor = `rgb(${255 - completeness*255}, ${completeness*150}, 0)`;
+  }
+}
+reflectGameStage();
+
 function swapCells(fromPos, toPos) {
   const fromCell = gameContainer.children[fromPos];
   const toCell = gameContainer.children[toPos];
   swapElements(fromCell, toCell);
+  reflectGameStage();
 }
 
 function swapElements(obj1, obj2) {
