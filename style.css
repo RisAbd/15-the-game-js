@@ -54,7 +54,7 @@ body, html {
 }
 
 .cell:hover {
-  color: rgb(200, 200, 0);
+  /*color: rgb(200, 200, 0);*/
 }
 
 .cell[data-value="0"] {
