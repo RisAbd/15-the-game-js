@@ -49,28 +49,40 @@ class Game extends Array {
   get(pos) {
     return this[this._ensureFlat(pos)];
   }
+  _zeroCellPosition(asXY=true) {
+    const r = this.map((_, i) => i).filter(pos => (this[pos] === 0))[0];
+    if (asXY) {
+      return this._xy(r);
+    }
+    return r;
+  }
 
   /**
-    * return [pos, newPos] for moved cell if any, else return undefined
+    * return array of [fromPos, toPos] tuples for moved cells 
+    * (empty array if no moves performed)
     *
   **/
-  moveDirection(dir) {
-    const [x, y] = this._xy(this.map((_, i) => i).filter(pos => (this[pos] === 0))[0]);  // get position of empty cell
+  moveDirection(dir, row=false) {
+    const [x, y] = this._zeroCellPosition();  // get position of empty cell
     switch (dir) {
       case 'up': {
-        if (y+1 >= this.h) return;  // impossible move
+        if (y+1 >= this.h) return [];  // impossible move
+        if (row) return this.moveCell([x, this.h-1]);   // act as last cell in column was clicked
         return this.moveCell([x, y+1])
       }
       case 'down': {
-        if (y-1 < 0) return;
+        if (y-1 < 0) return [];
+        if (row) return this.moveCell([x, 0]);  // act as first cell in column was clicked
         return this.moveCell([x, y-1]);
       }
       case 'right': {
-        if (x-1 < 0) return;
+        if (x-1 < 0) return [];
+        if (row) return this.moveCell([0, y]);  // as first cell in row was clicked
         return this.moveCell([x-1, y]);
       }
       case 'left': {
-        if (x+1 >= this.w) return;
+        if (x+1 >= this.w) return [];
+        if (row) return this.moveCell([this.w-1, y]);  // as last cell in row was clicked
         return this.moveCell([x+1, y]);
       }
       default: {
@@ -80,36 +92,46 @@ class Game extends Array {
   }
 
   /**
-    * return [pos, newPos] of new cell if cell with given position has empty adjacent cell
-    * or return undefined if move can not be done
+    * return array of [fromPos, toPos] tuples for moved cells 
+    * (empty array if no moves performed)
     *
   **/
   moveCell(pos) {
     pos = this._ensureFlat(pos);
-    const [x, y] = this._xy(pos);
     if (this[pos] === 0) {
       // zero cell is immovable
-      return;
+      return [];
     }
-    const adjacentPositions = [
-      [x, y-1],   // upper
-      [x+1, y],   // right
-      [x, y+1],   // bottom
-      [x-1, y],   // left
-    ]
-      .filter(([x, y]) => (x >= 0 && x < this.w && y >= 0 && y < this.h))   // leave only possible values
-      .map(this._flatPos.bind(this));
 
-    const [newPos] = adjacentPositions
-      .filter(pos => this[pos] === 0);     // leave only one with empty cell
+    const [x, y] = this._xy(pos);
+    const [x0, y0] = this._zeroCellPosition();
 
-    // newPos contains zero value === empty cell
-    if (newPos !== undefined) {
-      // swap values
-      [this[newPos], this[pos]] = [this[pos], this[newPos]];
-      // todo: check if game is ended
-      return [pos, newPos];
+    // if selected and emtpy cell are on same column
+    if (x === x0) {
+      const shiftValue = y0 < y ? 1 : -1;
+      const swapsCount = Math.abs(y - y0);
+      return new Array(swapsCount).fill(0).map((_, i) => {
+        const fromPos = this._flatPos([x0, y0+(i+1)*shiftValue]);
+        const toPos = this._flatPos([x0, y0+i*shiftValue]);
+        [this[fromPos], this[toPos]] = [this[toPos], this[fromPos]];
+        return [fromPos, toPos];
+      });
     }
+
+    // or if on same row
+    else if (y === y0) {
+      const shiftValue = x0 < x ? 1 : -1;
+      const swapsCount = Math.abs(x - x0);
+      return new Array(swapsCount).fill(0).map((_, i) => {
+        const fromPos = this._flatPos([x0+(i+1)*shiftValue, y0]);
+        const toPos = this._flatPos([x0+i*shiftValue, y0]);
+        [this[fromPos], this[toPos]] = [this[toPos], this[fromPos]];
+        return [fromPos, toPos];
+      });
+    }
+
+    // no swap actions
+    return [];
   }
 
   /**
@@ -169,10 +191,15 @@ function reflectGameStage() {
 }
 reflectGameStage();
 
-function swapCells(fromPos, toPos) {
-  const fromCell = gameContainer.children[fromPos];
-  const toCell = gameContainer.children[toPos];
-  swapElements(fromCell, toCell);
+function handleMoveResult(res) {
+  if (res.length === 0) {
+    return;
+  }
+  res.forEach(([fromPos, toPos]) => {
+    const fromCell = gameContainer.children[fromPos];
+    const toCell = gameContainer.children[toPos];
+    swapElements(fromCell, toCell);
+  });
   reflectGameStage();
 }
 
@@ -189,9 +216,7 @@ function swapElements(obj1, obj2) {
 function onCellClick(e) {
   const pos = Array.prototype.indexOf.call(gameContainer.children, e.target);
   const res = game.moveCell(pos);
-  if (res) {
-    swapCells(...res);
-  }
+  handleMoveResult(res);
 }
 
 
@@ -206,11 +231,11 @@ const keyCodeDirection = {
 
 function onKeyDown(e) {
   if (keyCodeDirection.hasOwnProperty(e.keyCode)) {
+    e.stopPropagation();
+    e.preventDefault();
     const direction = keyCodeDirection[e.keyCode];
-    const res = game.moveDirection(direction);
-    if (res) {
-      swapCells(...res);
-    }
+    const res = game.moveDirection(direction, e.ctrlKey);
+    handleMoveResult(res);
   }
 }
 
