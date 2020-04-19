@@ -167,12 +167,19 @@ gameContainer.style.gridTemplateColumns = `repeat(${fieldSize}, 1fr)`;
 
 const rootContainer = document.querySelector('#app');
 
+function randomCssColor() {
+  const minColor = 50, maxColor = 200;
+  const r = () => Math.random() * (maxColor-minColor) + minColor;   // not too dark and too light colors
+  return `rgb(${r()}, ${r()}, ${r()})`;
+}
+
 const cells = new Array(fieldSize*fieldSize).fill(0).map((_, i) => {
   const value = game[i];
   const cell = document.createElement('button');
   cell.classList.add('cell');
   cell.innerText = value;
   cell.dataset.value = value;
+  cell.style.color = randomCssColor();
   if (value === 0) { cell.tabIndex = -1; }
   cell.addEventListener('click', onCellClick);
 
@@ -225,7 +232,7 @@ function onCellClick(e) {
 
 // control by key
 
-const keyCodeDirection = {
+const keyCodeArrowButtonMap = {
   38: 'up',
   39: 'right',
   40: 'down',
@@ -233,10 +240,10 @@ const keyCodeDirection = {
 };
 
 function onKeyDown(e) {
-  if (keyCodeDirection.hasOwnProperty(e.keyCode)) {
+  if (keyCodeArrowButtonMap.hasOwnProperty(e.keyCode)) {
     e.stopPropagation();
     e.preventDefault();
-    const direction = keyCodeDirection[e.keyCode];
+    const direction = keyCodeArrowButtonMap[e.keyCode];
     const res = game.moveDirection(direction, e.ctrlKey);
     handleMoveResult(res);
   }

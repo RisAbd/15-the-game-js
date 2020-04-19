@@ -39,20 +39,6 @@ body, html {
   border-radius: 20px;
 }
 
-
-.cell:nth-child(4n+1) {
-  color: darkred;
-}
-.cell:nth-child(4n+2) {
-  color: darkblue;
-}
-.cell:nth-child(4n+3) {
-  color: darkgreen;
-}
-.cell:nth-child(4n+4) {
-  color: purple;
-}
-
 .cell {
   font-size: 1.8rem;
   font-weight: 600;
