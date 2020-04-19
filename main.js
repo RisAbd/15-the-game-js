@@ -159,12 +159,15 @@ class Game extends Array {
   }
 }
 
-const game = new Game(4, 4).shuffle();
+const fieldSize = 4;
 
+const game = new Game(fieldSize, fieldSize).shuffle();
 const gameContainer = document.querySelector('#game-container');
+gameContainer.style.gridTemplateColumns = `repeat(${fieldSize}, 1fr)`;
+
 const rootContainer = document.querySelector('#app');
 
-const cells = new Array(4*4).fill(0).map((_, i) => {
+const cells = new Array(fieldSize*fieldSize).fill(0).map((_, i) => {
   const value = game[i];
   const cell = document.createElement('button');
   cell.classList.add('cell');
