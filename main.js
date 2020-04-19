@@ -221,6 +221,14 @@ function swapElements(obj1, obj2) {
   temp.parentNode.removeChild(temp);
 }
 
+// debug
+
+function _swapGamePositions(a, b) {
+  const r = [game[a], game[b]] = [game[b], game[a]];
+  handleMoveResult([[a, b]]);
+  return r;
+}
+
 
 // control by cell click
 function onCellClick(e) {
