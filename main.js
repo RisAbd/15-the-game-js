@@ -133,7 +133,7 @@ class Game extends Array {
         .reduce((sum, diff) => sum+Math.abs(diff), 0);
 
     // powering resulting value return more 'native' feeling values
-    return Math.pow(1.0 - indexValueDiffSum / (14*this.length), 3);
+    return Math.pow(1.0 - indexValueDiffSum / (14*this.length), 4);
   }
 }
 
@@ -159,12 +159,12 @@ const cells = new Array(4*4).fill(0).map((_, i) => {
 function reflectGameStage() {
   const completeness = game.estimatedCompleteness();
   if (completeness === 1) {
-    rootContainer.style.backgroundColor = '#00c000';
+    rootContainer.style.backgroundColor = '#3333ff';
   } else {
     // red component goes down to zero
     // green to 1 according to completeness value
     // ... means from gradient from red to green! kek
-    rootContainer.style.backgroundColor = `rgb(${255 - completeness*255}, ${completeness*150}, 0)`;
+    rootContainer.style.backgroundColor = `rgb(${255 - completeness*255}, ${completeness*255}, 0)`;
   }
 }
 reflectGameStage();
