@@ -11,6 +11,7 @@ class Game extends Array {
     super(w*h);
     this.w = w; 
     this.h = h;
+    this.movesCount = 0;
     this.fill(0).forEach((_, i) => { this[i] = i; });
   }
   shuffle() {
@@ -108,6 +109,7 @@ class Game extends Array {
 
     // if selected and emtpy cell are on same column
     if (x === x0) {
+      this.movesCount += 1;
       const shiftValue = y0 < y ? 1 : -1;
       const swapsCount = Math.abs(y - y0);
       return new Array(swapsCount).fill(0).map((_, i) => {
@@ -120,6 +122,7 @@ class Game extends Array {
 
     // or if on same row
     else if (y === y0) {
+      this.movesCount += 1;
       const shiftValue = x0 < x ? 1 : -1;
       const swapsCount = Math.abs(x - x0);
       return new Array(swapsCount).fill(0).map((_, i) => {
@@ -160,12 +163,28 @@ class Game extends Array {
 }
 
 const fieldSize = 4;
-
 const game = new Game(fieldSize, fieldSize).shuffle();
-const gameContainer = document.querySelector('#game-container');
-gameContainer.style.gridTemplateColumns = `repeat(${fieldSize}, 1fr)`;
+const movesCounter = {
+  best: JSON.parse(localStorage.getItem('15:best-result')),
+  current: 0,
+  gameCompleted: false,
+  complete: function() {
+    if (this.gameCompleted) return;
+    this.gameCompleted = true;
+    if (this.best === null || this.current < this.best) {
+      this.best = this.current;
+      localStorage.setItem('15:best-result', JSON.stringify(this.best));
+    }
+  }
+}
 
+
+const gameContainer = document.querySelector('#game-container');
 const rootContainer = document.querySelector('#app');
+const currentMovesCounter = document.querySelector('#moves-count');
+const bestResultCounter = document.querySelector('#best-result');
+
+gameContainer.style.gridTemplateColumns = `repeat(${fieldSize}, 1fr)`;
 
 function randomCssColor() {
   const minColor = 50, maxColor = 200;
@@ -188,9 +207,11 @@ const cells = new Array(fieldSize*fieldSize).fill(0).map((_, i) => {
   return cell;
 });
 
+
 function reflectGameStage() {
   const completeness = game.estimatedCompleteness();
   if (completeness === 1) {
+    movesCounter.complete();
     rootContainer.style.backgroundColor = '#3333ff';
   } else {
     // red component goes down to zero
@@ -198,6 +219,8 @@ function reflectGameStage() {
     // ... means from gradient from red to green! kek
     rootContainer.style.backgroundColor = `rgb(${255 - completeness*255}, ${completeness*255}, 0)`;
   }
+  currentMovesCounter.innerText = movesCounter.current;
+  bestResultCounter.innerText = movesCounter.best === null ? '-' : movesCounter.best;
 }
 reflectGameStage();
 
@@ -205,6 +228,7 @@ function handleMoveResult(res) {
   if (res.length === 0) {
     return;
   }
+  movesCounter.current = game.movesCount;
   res.forEach(([fromPos, toPos]) => {
     const fromCell = gameContainer.children[fromPos];
     const toCell = gameContainer.children[toPos];
