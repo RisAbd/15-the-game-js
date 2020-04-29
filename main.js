@@ -35,7 +35,8 @@ class Game extends Array {
         c += 1;
       }
     }
-    console.log('shuffled %d times in %d millis with %d misses (rate: %d\%)', n, performance.now() - ts, c, n/c*100);
+    console.log('shuffled %d times in %s millis with %d misses (rate: %d\%)', 
+                n, (performance.now() - ts).toFixed(3), c, n/c*100);
     this.movesCount = movesCount;
     return this;
   }
