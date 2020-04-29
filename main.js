@@ -1,21 +1,42 @@
 
 
 class Game extends Array {
-  constructor(w, h) {
+  constructor(w, h, type = 'end-zero') {
     if (h === undefined) {
       // when using .map it calls new Game(16)
       super(w);
       return;
     }
-    
     super(w*h);
+
     this.w = w; 
     this.h = h;
     this.movesCount = 0;
-    this.fill(0).forEach((_, i) => { this[i] = i; });
+    this.type = type;
+    switch (type) {
+      case 'end-zero':
+        this.fill(0).forEach((_, i) => { this[i] = (i === this.length-1) ? 0 : i+1; });
+        break;
+      case 'start-zero':
+        this.fill(0).forEach((_, i) => { this[i] = i; });
+        break;
+      default:
+        throw new Error(`unknown game type: ${type}`);
+    }
+    
   }
-  shuffle() {
-    this.sort(() => Math.random() - 0.5);
+  shuffle(n = 500) {
+    // this.sort(() => Math.random() - 0.5);
+    const movesCount = this.movesCount;
+    let c = 0;
+    const ts = performance.now();
+    for (let i = 0; i < n; i++) {
+      while (this.moveCell(Math.floor(Math.random() * this.length)).length === 0) {
+        c += 1;
+      }
+    }
+    console.log('shuffled %d times in %d millis with %d misses (rate: %d\%)', n, performance.now() - ts, c, n/c*100);
+    this.movesCount = movesCount;
     return this;
   }
 
